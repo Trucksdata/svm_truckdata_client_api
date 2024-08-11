@@ -4,6 +4,7 @@ use App\Http\Controllers\ManufacturerController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\CommonFaqsController;
 use App\Http\Controllers\CompareController;
 use App\Http\Controllers\DataCollectionController;
 use App\Http\Controllers\EnergySourceController;
@@ -60,4 +61,5 @@ Route::controller(CompareController::class)->prefix('compare')->group(function (
 Route::apiResource('blog', BlogController::class);
 Route::apiResource('home-page-settings', HomePageSettingController::class);
 Route::apiResource('data-collection', DataCollectionController::class);
+Route::apiResource('common-faqs', CommonFaqsController::class);
 Route::post('import', [ImportController::class,'import']);

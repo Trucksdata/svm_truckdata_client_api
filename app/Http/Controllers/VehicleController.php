@@ -6,6 +6,7 @@ use App\Filters\VehicleFilter;
 use App\Http\Requests\StoreVehicleRequest;
 use App\Http\Requests\UpdateVehicleRequest;
 use App\Models\Vehicle;
+use App\Models\CommonFaq;
 use Illuminate\Http\Request;
 
 class VehicleController extends Controller
@@ -69,8 +70,109 @@ class VehicleController extends Controller
      */
     public function show(Vehicle $vehicle)
     {
-        return $vehicle->load(['vehicleSpecs' => ['specification', 'values'], 'vehicleType', 'energySource', 'manufacturer', 'parentVehicle']);
+        // Load the vehicle relationships
+        $vehicle->load([
+            'vehicleSpecs' => ['specification', 'values'],
+            'vehicleType',
+            'energySource',
+            'manufacturer', // Load manufacturer relationship
+            'parentVehicle'
+        ]);
+    
+        // Fetch all FAQs
+        $faqs = CommonFaq::all();
+    
+        // Define the replacements
+        $replacements = [
+            '{Variant Name}' => $vehicle->title,
+            '{Min Price}' => $vehicle->min_price,
+            '{Max Price}' => $vehicle->max_price,
+        ];
+    
+        // Define the specifications to check
+        $specificationsToCheck = [
+            "Status",
+            "Loading Span (ft) / Loading Capacity (Cu.M)",
+            "Wheel Base (mm)",
+            "Gross Vehicle Weight (Kg)",
+            "Payload (Range)(Kg)",
+            "Maximum Geared Speed (Kmph)",
+            "Tyre Size",
+            "Engine Model",
+            "No of Cylinders",
+            "Displacement (cc)",
+            "Maximum Power"
+        ];
+
+        $highestValueCheckItems = ["Gross Vehicle Weight (Kg)","Payload (Range)(Kg)"];
+
+        $avoidRepeats = ["Loading Span (ft) / Loading Capacity (Cu.M)","Wheel Base (mm)"];
+    
+
+        foreach ($vehicle->vehicleSpecs as $spec) {
+            $specName = $spec->specification->name;
+            // Check if the specification name is in the list of items to check
+            if (in_array($specName, $specificationsToCheck)) {
+                $specValues = $spec->values ?? null;
+                $specValuesList = [];
+        
+                if ($specValues) {
+                    foreach ($specValues as $specValue) {
+                        $specValuesList[] = $specValue->value;
+                    }
+                }
+                if ($specValuesList) {
+                    $placeholder = '{' . $specName . '}';
+                    $displayValue = null;
+
+                    if (in_array($specName, $highestValueCheckItems)) {
+                        if (!empty($specValuesList)) {
+                            $displayValue = max($specValuesList);
+                        }
+                    }
+                    else if(in_array($specName, $avoidRepeats)) {
+                        if (!empty($specValuesList)) {
+                            $displayValue = implode(', ',array_unique($specValuesList));
+                        }
+                    }
+                    else{
+                        $displayValue = implode(', ',$specValuesList);
+                    }
+                    $replacements[$placeholder] = $displayValue;
+                }
+            }
+        }
+
+        // Ensure all specifications are in $replacements
+        foreach ($specificationsToCheck as $specification) {
+            $placeholder = '{' . $specification . '}';
+
+            // Check if the placeholder exists in replacements
+            if (!array_key_exists($placeholder, $replacements)) {
+                // Add the placeholder with value "-"
+                $replacements[$placeholder] = "-";
+            }
+        }
+        
+        // Replace placeholders in FAQs
+        foreach ($faqs as $faq) {
+            foreach ($replacements as $placeholder => $value) {
+                $faq->question = str_replace($placeholder, $value, $faq->question);
+                $faq->answer = str_replace($placeholder, $value, $faq->answer);
+            }
+        }
+    
+        // Append the modified FAQs to the existing `faq` attribute
+        $existingFaqs = $vehicle->faq ?? [];
+        $vehicle->faqs = array_merge($existingFaqs, $faqs->toArray());
+    
+        //$vehicle->price_unit = $replacements;
+        // Return the vehicle with the FAQs included
+        return response()->json($vehicle);
     }
+    
+
+
 
     /**
      * Update the specified resource in storage.
