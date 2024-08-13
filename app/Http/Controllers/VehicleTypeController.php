@@ -21,8 +21,16 @@ class VehicleTypeController extends Controller
     public function index(Request $request)
     {
         $limit = $request->limit ?: 100;
-        return VehicleType::with(['manufacturers.series.vehicles', 'energySources'])->paginate($limit);
+        
+        return VehicleType::with([
+            'manufacturers.series.vehicles' => function ($query) {
+                $query->where('is_visible', 1)
+                    ->orderBy('title', 'asc'); // Assuming the vehicles have a 'name' column
+            }, 
+            'energySources'
+        ])->paginate($limit);
     }
+
 
     /**
      * Store a newly created resource in storage.
