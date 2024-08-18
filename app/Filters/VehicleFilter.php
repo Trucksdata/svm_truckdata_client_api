@@ -47,15 +47,42 @@ class VehicleFilter extends QueryFilter
 
     public function application($value = null)
     {
-        $filteredValues = $this->filterValues($value);
-        $spec_id = $filteredValues['spec_id'];
-        $value = $filteredValues['value'];
+        // Split the incoming value by commas
+        $values = explode(',', $value);
 
-        return $this->builder->whereHas('vehicleSpecs.allValues', function ($values) use ($spec_id, $value) {
-            $values->where('specification_id', $spec_id);
-            $values->where('value', $value);
+        // Get the filtered specification ID and value from the request
+        $filteredValues = $this->filterValues($values[0]);
+        $spec_id = $filteredValues['spec_id'];
+        $value = $values[1] ?? null;
+        $sub_application = $values[2] ?? null;
+
+        // Apply the filter to the query builder
+        return $this->builder->whereHas('vehicleSpecs.allValues', function ($query) use ($spec_id, $value, $sub_application) {
+            $query->where('specification_id', $spec_id)
+                ->where(function ($subQuery) use ($value, $sub_application) {
+                    if($value != null){
+                        $subQuery->where('parent_option_id', $value);
+                    }
+                    if ($sub_application !== null) {
+                        $subQuery->Where('value', $sub_application);
+                    }
+                });
         });
     }
+
+
+
+    // public function subApplication($value = null)
+    // {
+    //     $filteredValues = $this->filterValues($value);
+    //     $spec_id = $filteredValues['spec_id'];
+    //     $value = $filteredValues['value'];
+
+    //     return $this->builder->whereHas('vehicleSpecs.allValues.child_values', function ($values) use ($spec_id, $value,) {
+    //         $values->where('specification_id', $spec_id);
+    //         $values->where('value', $value);
+    //     });
+    // }
 
     public function gvw($value = null)
     {

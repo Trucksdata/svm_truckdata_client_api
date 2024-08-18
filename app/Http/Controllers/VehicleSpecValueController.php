@@ -37,8 +37,18 @@ class VehicleSpecValueController extends Controller
      */
     public function store(StoreVehicleSpecValueRequest $request, VehicleSpec $vehicleSpec)
     {
-        $value = $vehicleSpec->values()->create($request->validated());
+        // Create the value with the validated data
+        $value = $vehicleSpec->values()->create(array_merge(
+            $request->validated(),
+            [
+            'parent_option_id' => $request->input('parent_value_id'), // Set parent_option_id from parent_value_id in request
+            'parent_value_id' => null // Set parent_value_id to null
+            ]
+        ));
+
+        // Return a success response with the created value
         return $this->successResponse('created', ['data' => $value]);
+
     }
 
     /**

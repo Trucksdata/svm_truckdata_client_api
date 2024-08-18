@@ -25,6 +25,7 @@ class SpecificationCategorySeeder extends Seeder
             ["name" => "Cabin & Electrical"],
             ["name" => "Other Details"],
             ["name" => "Endurance"],
+            ["name" => "Applications"]
         ];
         
         

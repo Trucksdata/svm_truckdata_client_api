@@ -25,6 +25,7 @@ class VehicleController extends Controller
     {
         $limit = $request->limit ?: 15;
         return Vehicle::with([
+            //'vehicleSpecs' => ['specification', 'values'],
             'vehicleType:id,name',
             'manufacturer:id,name',
             'energySource',
