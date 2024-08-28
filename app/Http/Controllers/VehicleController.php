@@ -86,8 +86,8 @@ class VehicleController extends Controller
         // Define the replacements
         $replacements = [
             '{Variant Name}' => $vehicle->title,
-            '{Min Price}' => $vehicle->min_price,
-            '{Max Price}' => $vehicle->max_price,
+            '{Min Price}' => number_format($vehicle->min_price/100000, 2) . ' lakh',
+            '{Max Price}' => number_format($vehicle->max_price/100000, 2) . ' lakh',
         ];
     
         // Define the specifications to check
