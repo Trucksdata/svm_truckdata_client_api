@@ -23,7 +23,7 @@ class VehicleController extends Controller
      */
     public function index(Request $request, VehicleFilter $filters)
     {
-        $limit = $request->limit ?: 15;
+        $limit = $request->limit ?: 2000;
         return Vehicle::with([
             'vehicleSpecs' => ['specification', 'values'],
             'vehicleType:id,name',
