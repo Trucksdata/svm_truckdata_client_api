@@ -46,6 +46,7 @@ class VehicleImport implements ToModel, WithHeadingRow
             'is_latest' => $row['is_latest'],
             'description' => $row['description'],
             'category_name' => $row['category_name'],
+            'faq' => json_decode($row['faq'], true),
         ]);
         foreach ($row as $heading => $values) {
             Log::info($heading);
