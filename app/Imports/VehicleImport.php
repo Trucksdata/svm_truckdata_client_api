@@ -45,6 +45,7 @@ class VehicleImport implements ToModel, WithHeadingRow
             'is_upcoming' => $row['is_upcoming'],
             'is_latest' => $row['is_latest'],
             'description' => $row['description'],
+            'category_name' => $row['category_name'],
         ]);
         foreach ($row as $heading => $values) {
             Log::info($heading);
